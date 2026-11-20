@@ -1,13 +1,12 @@
-const CACHE_NAME = "namu-v29";
+const CACHE_NAME = "namu-studio-v29";
 const ASSETS = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/page-logo.png",
-  "/namu-logo.png",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/apple-touch-icon.png"
+  "/page-logo.png?v=29",
+  "/icon-192.png?v=29",
+  "/icon-512.png?v=29",
+  "/apple-touch-icon.png?v=29"
 ];
 
 self.addEventListener("install", (event) => {
