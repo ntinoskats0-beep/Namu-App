@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NAMU — Μηνύματα & Εγγραφή (Supabase)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 680px; margin: 24px auto; padding: 0 16px; line-height: 1.5; }
+    .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    input, button { padding: 8px 12px; margin: 4px 0; font-size: 15px; }
+    button { cursor: pointer; }
+    .msg { border-bottom: 1px solid #eee; padding: 8px 0; }
+    .meta { font-size: 12px; color: #666; }
+    #status { margin-bottom: 12px; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>NAMU — Μηνύματα</h1>
+  <div id="status">Φόρτωση...</div>
+
+  <div class="card" id="auth-box">
+    <h2>Εγγραφή (Sign up) / Σύνδεση (Sign in)</h2>
+    <input id="email" type="email" placeholder="Email" /><br />
+    <input id="password" type="password" placeholder="Κωδικός (τουλάχιστον 6 χαρακτήρες)" /><br />
+    <button id="signup-btn" type="button">Εγγραφή (Sign up)</button>
+    <button id="signin-btn" type="button">Σύνδεση (Sign in)</button>
+    <button id="signout-btn" type="button" style="display:none;">Αποσύνδεση</button>
+  </div>
+
+  <div class="card" id="message-box">
+    <h2>Αποστολή μηνύματος</h2>
+    <input id="receiver" type="text" placeholder="Παραλήπτης (receiver)" /><br />
+    <input id="content" type="text" placeholder="Μήνυμα (content)" style="width: 100%; box-sizing: border-box;" /><br />
+    <button id="send-btn" type="button">Αποστολή</button>
+  </div>
+
+  <div class="card">
+    <h2>Μηνύματα</h2>
+    <div id="messages"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://rwypwielhftriwnphnij.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bixhqwgYFgfHP338QM4zjw_Wcbv7XAb";
+
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const statusEl = document.getElementById("status");
+    const emailEl = document.getElementById("email");
+    const passwordEl = document.getElementById("password");
+    const signupBtn = document.getElementById("signup-btn");
+    const signinBtn = document.getElementById("signin-btn");
+    const signoutBtn = document.getElementById("signout-btn");
+    const receiverEl = document.getElementById("receiver");
+    const contentEl = document.getElementById("content");
+    const sendBtn = document.getElementById("send-btn");
+    const messagesEl = document.getElementById("messages");
+
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? "#b91c1c" : "#065f46";
+    }
+
+    async function refreshUserUI() {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        setStatus(`Συνδεδεμένος ως: ${user.email}`);
+        signoutBtn.style.display = "inline-block";
+      } else {
+        setStatus("Μη συνδεδεμένος (μπορείς να διαβάζεις μηνύματα· για αποστολή κάνε Sign up / Sign in).");
+        signoutBtn.style.display = "none";
+      }
+    }
+
+    function renderMessages(rows) {
+      if (!rows || rows.length === 0) {
+        messagesEl.innerHTML = "<p>Δεν υπάρχουν μηνύματα ακόμα.</p>";
+        return;
+      }
+      messagesEl.innerHTML = rows.map((m) => `
+        <div class="msg">
+          <div><strong>${escapeHtml(m.sender || "Άγνωστος")}</strong> → <strong>${escapeHtml(m.receiver || "Όλοι")}</strong></div>
+          <div>${escapeHtml(m.content || "")}</div>
+          <div class="meta">${m.created_at ? new Date(m.created_at).toLocaleString("el-GR") : ""}</div>
+        </div>
+      `).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    async function loadMessages() {
+      const { data, error } = await sb
+        .from("message")
+        .select("id, created_at, sender, receiver, content")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        setStatus(`Σφάλμα φόρτωσης μηνυμάτων: ${error.message}`, true);
+        return;
+      }
+      renderMessages(data);
+    }
+
+    signupBtn.addEventListener("click", async () => {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+      const { data, error } = await sb.auth.signUp({ email, password });
+      if (error) {
+        setStatus(`Σφάλμα εγγραφής: ${error.message}`, true);
+        return;
+      }
+      if (data.session) {
+        setStatus(`Η εγγραφή ολοκληρώθηκε! Συνδεθήκατε ως ${data.user.email}`);
+      } else {
+        setStatus("Η εγγραφή στάλθηκε! Ελέγξτε το email σας αν απαιτείται επιβεβαίωση.");
+      }
+      await refreshUserUI();
+    });
+
+    signinBtn.addEventListener("click", async () => {
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) {
+        setStatus(`Σφάλμα σύνδεσης: ${error.message}`, true);
+        return;
+      }
+      setStatus(`Συνδεθήκατε ως ${data.user.email}`);
+      await refreshUserUI();
+    });
+
+    signoutBtn.addEventListener("click", async () => {
+      await sb.auth.signOut();
+      await refreshUserUI();
+    });
+
+    sendBtn.addEventListener("click", async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) {
+        setStatus("Πρέπει πρώτα να κάνεις Sign up ή Sign in για να στείλεις μήνυμα.", true);
+        return;
+      }
+
+      const receiver = receiverEl.value.trim();
+      const content = contentEl.value.trim();
+      if (!content) {
+        setStatus("Γράψε ένα μήνυμα πριν την αποστολή.", true);
+        return;
+      }
+
+      const { error } = await sb
+        .from("message")
+        .insert([{
+          sender: user.email,
+          receiver: receiver || null,
+          content
+        }]);
+
+      if (error) {
+        setStatus(`Σφάλμα αποστολής: ${error.message}`, true);
+        return;
+      }
+
+      contentEl.value = "";
+      setStatus("Το μήνυμα στάλθηκε!");
+      await loadMessages();
+    });
+
+    sb.channel("public:message")
+      .on("postgres_changes", { event: "*", schema: "public", table: "message" }, () => {
+        loadMessages();
+      })
+      .subscribe();
+
+    refreshUserUI();
+    loadMessages();
+  </script>
+</body>
+</html>
