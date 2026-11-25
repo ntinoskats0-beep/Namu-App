@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astera</title>
+  <style>
+    :root {
+      --bg-dark: #090e0c;
+      --bg-surface: #111916;
+      --bg-card: #16211d;
+      --border-subtle: rgba(255, 255, 255, 0.09);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.16);
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text-main: #f3f7f5;
+      --text-muted: #94a69e;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: #050807;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    /* AUTH SCREEN */
+    .auth-screen {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, rgba(16, 185, 129, 0.15), var(--bg-dark) 60%);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+    }
+
+    .auth-screen.hidden { display: none; }
+
+    .auth-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 8px;
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-surface);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      gap: 4px;
+    }
+
+    .auth-tab-btn {
+      padding: 10px 8px;
+      border: none;
+      border-radius: 9px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .auth-tab-btn.active {
+      background: var(--emerald);
+      color: #042f1a;
+    }
+
+    .auth-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .auth-msg {
+      font-size: 12px;
+      padding: 9px 11px;
+      border-radius: 10px;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .auth-msg.err {
+      display: block;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .auth-msg.ok {
+      display: block;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+
+    /* APP SHELL */
+    .app-shell {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: var(--bg-dark);
+      border-left: 1px solid var(--border-subtle);
+      border-right: 1px solid var(--border-subtle);
+      display: none;
+      flex-direction: column;
+      position: relative;
+      padding-bottom: 100px;
+    }
+
+    .app-shell.active { display: flex; }
+
+    .app-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.09) 0%, rgba(9, 14, 12, 0) 100%);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      gap: 8px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 190px;
+    }
+
+    .pill-btn {
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .pill-btn.logout {
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .period-bar {
+      display: flex;
+      background: var(--bg-surface);
+      padding: 4px;
+      border-radius: 12px;
+      margin: 12px 16px 8px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .period-btn {
+      flex: 1;
+      padding: 8px 0;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .period-btn.active {
+      background: var(--emerald);
+      color: #052e16;
+      font-weight: 700;
+    }
+
+    .main-content {
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .tab-section {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .tab-section.active { display: flex; }
+
+    .compare-banner {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 12.5px;
+    }
+
+    .compare-badge {
+      padding: 5px 10px;
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .comp-up { background: rgba(16, 185, 129, 0.16); color: var(--emerald); }
+    .comp-down { background: rgba(239, 68, 68, 0.16); color: #fca5a5; }
+    .comp-flat { background: rgba(148, 166, 158, 0.16); color: var(--text-muted); }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-card.highlight {
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.22), rgba(16, 185, 129, 0.05));
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .kpi-value { font-size: 16px; font-weight: 800; color: #fff; }
+    .kpi-sub { font-size: 10.5px; font-weight: 600; color: var(--text-muted); }
+
+    .liquidity-strip {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .liq-item span { display: block; color: var(--text-muted); font-size: 11px; }
+    .liq-item strong { font-size: 14px; }
+
+    /* ΣΚΑΝΑΡΙΣΜΑ ΠΑΝΩ ΑΠΟ ΤΟ ΜΙΚΡΟ ΚΟΥΜΠΙ «Ζ» */
+    .z-compact-box {
+      background: var(--bg-card);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 15px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .btn-scan-top {
+      width: 100%;
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      color: #1c1202;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* ΜΙΚΡΟ ΚΟΥΜΠΙ «Ζ» ΟΠΩΣ ΗΤΑΝ */
+    .btn-z-compact {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #042f1a;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-z {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #042f1a;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .full-module {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sec-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .sec-title {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .count-pill {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+
+    .empty-box {
+      background: var(--bg-surface);
+      border: 1px dashed var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 14px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .card-stack { display: flex; flex-direction: column; gap: 10px; }
+
+    .alert-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--amber);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .alert-card.urgent { border-left-color: var(--red); }
+    .alert-title { font-size: 13px; font-weight: 700; }
+    .alert-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+    .data-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 12px;
+    }
+
+    .list-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 8px;
+    }
+
+    .list-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .list-row:first-child { padding-top: 0; }
+
+    .badge-exp { font-size: 10.5px; padding: 2px 7px; border-radius: 6px; font-weight: 700; }
+    .exp-soon { background: rgba(239, 68, 68, 0.18); color: #fca5a5; }
+    .exp-ok { background: rgba(16, 185, 129, 0.15); color: var(--emerald); }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+
+    .form-input, .form-select {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 11px;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    .calc-box {
+      background: var(--bg-dark);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 11px;
+      padding: 10px 12px;
+      font-size: 12.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .calc-row { display: flex; justify-content: space-between; }
+
+    .receipt-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      display: none;
+    }
+
+    .receipt-preview.show { display: block; }
+
+    /* MODAL ΓΙΑ «Ζ» */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ΚΟΥΜΠΙ ΕΡΩΤΗΣΕΩΝ ΚΑΤΩ ΔΕΞΙΑ */
+    .fab-help {
+      position: fixed;
+      right: 16px;
+      bottom: 82px;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #042f1a;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* PANEL ΕΡΩΤΗΣΕΩΝ / ΒΟΗΘΕΙΑΣ */
+    .help-drawer {
+      position: fixed;
+      right: 14px;
+      bottom: 138px;
+      width: calc(100% - 28px);
+      max-width: 390px;
+      background: var(--bg-card);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+      z-index: 45;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .help-drawer.open { display: flex; }
+
+    .faq-q-btn {
+      width: 100%;
+      text-align: left;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .faq-ans-box {
+      background: var(--bg-dark);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 500px;
+      background: rgba(13, 20, 17, 0.96);
+      border-top: 1px solid var(--border-subtle);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 8px 6px 12px;
+      z-index: 30;
+    }
+
+    .nav-item {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .nav-item.active { color: var(--emerald); }
+
+    .toast {
+      position: fixed;
+      top: 68px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: #042f1a;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 99px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+      z-index: 60;
+      display: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast"></div>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-brand">
+      <div class="brand-logo" style="width:62px; height:62px; border-radius:17px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="62" height="62">
+          <defs>
+            <linearGradient id="g1a" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#10b981"/>
+              <stop offset="100%" stop-color="#047857"/>
+            </linearGradient>
+            <linearGradient id="g2a" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#fbbf24"/>
+              <stop offset="100%" stop-color="#d97706"/>
+            </linearGradient>
+          </defs>
+          <rect x="8" y="8" width="184" height="184" rx="44" fill="#0d1713" stroke="url(#g1a)" stroke-width="5"/>
+          <path d="M 48 148 C 36 148, 32 136, 42 128 C 56 118, 82 72, 102 42 C 106 36, 111 36, 113 43 C 122 76, 134 118, 148 142 C 153 150, 162 148, 166 140"
+                fill="none" stroke="url(#g1a)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M 96 52 C 84 82, 68 118, 56 142"
+                fill="none" stroke="#34d399" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
+          <path d="M 54 114 C 78 106, 116 102, 148 108 C 156 110, 160 103, 153 99"
+                fill="none" stroke="url(#g2a)" stroke-width="6.5" stroke-linecap="round"/>
+          <path d="M 142 54 L 145 62 L 153 65 L 145 68 L 142 76 L 139 68 L 131 65 L 139 62 Z" fill="#fbbf24"/>
+        </svg>
+      </div>
+      <div class="brand-title" style="font-size:32px;">Astera</div>
+      <p style="font-size:12.5px; color:var(--text-muted); max-width:350px; line-height:1.45;">
+        Μπες με <strong>Log In</strong> ή κάνε <strong>Sign In</strong> (Εγγραφή) για νέο λογαριασμό.
+      </p>
+    </div>
+
+    <div class="auth-tabs" style="position:relative; z-index:25; pointer-events:auto;">
+      <button type="button" class="auth-tab-btn active" id="tab-btn-login" onclick="window.__asteraSwitchAuth && window.__asteraSwitchAuth('login')">Log In</button>
+      <button type="button" class="auth-tab-btn" id="tab-btn-register" onclick="window.__asteraSwitchAuth && window.__asteraSwitchAuth('register')">Sign In</button>
+    </div>
+
+    <div id="auth-feedback" class="auth-msg"></div>
+
+    <form id="login-form" class="auth-card" novalidate onsubmit="event.preventDefault(); window.__asteraLogin && window.__asteraLogin();">
+      <div class="form-group">
+        <label>Όνομα ή eMail</label>
+        <input id="login-email" name="username" autocomplete="username" class="form-input" type="text" placeholder="π.χ. Κώστας ή onoma@gmail.com" />
+      </div>
+      <div class="form-group">
+        <label>Κωδικός</label>
+        <input id="login-pass" name="password" autocomplete="current-password" class="form-input" type="password" placeholder="••••••••" />
+      </div>
+      <button type="button" id="btn-submit-login" class="btn-z" onclick="window.__asteraLogin && window.__asteraLogin()">Log In</button>
+    </form>
+
+    <form id="register-form" class="auth-card" style="display:none;" novalidate onsubmit="event.preventDefault(); window.__asteraRegister && window.__asteraRegister();">
+      <div class="form-group">
+        <label>Όνομα / Επωνυμία</label>
+        <input id="reg-name" name="name" autocomplete="name" class="form-input" type="text" placeholder="π.χ. Ντίνος" />
+      </div>
+      <div class="form-group">
+        <label>eMail</label>
+        <input id="reg-email" name="email" autocomplete="email" class="form-input" type="email" placeholder="π.χ. ntinoskats0@gmail.com" />
+      </div>
+      <div class="form-group">
+        <label>Κωδικός Πρόσβασης</label>
+        <input id="reg-pass" name="new-password" autocomplete="new-password" class="form-input" type="password" placeholder="Τουλάχιστον 4 χαρακτήρες" />
+      </div>
+      <button type="button" id="btn-submit-register" class="btn-z" onclick="window.__asteraRegister && window.__asteraRegister()">Sign In (Δημιουργία Λογαριασμού)</button>
+    </form>
+  </div>
+
+  <!-- PROTECTED APPLICATION -->
+  <div id="app-shell" class="app-shell">
+    <header class="app-header">
+      <div class="brand-group">
+        <div class="brand-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="38" height="38">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#10b981"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#fbbf24"/>
+                <stop offset="100%" stop-color="#d97706"/>
+              </linearGradient>
+            </defs>
+            <rect x="8" y="8" width="184" height="184" rx="44" fill="#0d1713" stroke="url(#g1)" stroke-width="5"/>
+            <path d="M 48 148 C 36 148, 32 136, 42 128 C 56 118, 82 72, 102 42 C 106 36, 111 36, 113 43 C 122 76, 134 118, 148 142 C 153 150, 162 148, 166 140"
+                  fill="none" stroke="url(#g1)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 96 52 C 84 82, 68 118, 56 142"
+                  fill="none" stroke="#34d399" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
+            <path d="M 54 114 C 78 106, 116 102, 148 108 C 156 110, 160 103, 153 99"
+                  fill="none" stroke="url(#g2)" stroke-width="6.5" stroke-linecap="round"/>
+            <path d="M 142 54 L 145 62 L 153 65 L 145 68 L 142 76 L 139 68 L 131 65 L 139 62 Z" fill="#fbbf24"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">Astera</div>
+          <div id="user-sub" class="brand-subtitle"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:6px;">
+        <button type="button" class="pill-btn" id="btn-clear">Καθαρισμός</button>
+        <button type="button" class="pill-btn logout" id="btn-logout">Έξοδος</button>
+      </div>
+    </header>
+
+    <div class="period-bar">
+      <button type="button" class="period-btn active" data-period="day">Ημέρα</button>
+      <button type="button" class="period-btn" data-period="week">Εβδομάδα</button>
+      <button type="button" class="period-btn" data-period="month">Μήνας</button>
+    </div>
+
+    <main class="main-content">
+      <!-- TAB 1: ΕΠΙΣΚΟΠΗΣΗ -->
+      <section id="tab-dashboard" class="tab-section active">
+        <div class="compare-banner">
+          <div>
+            <div style="font-weight:700;" id="comp-label">Τζίρος Περιόδου</div>
+            <div style="font-size:11.5px; color:var(--text-muted);" id="comp-detail">Δεν υπάρχουν δεδομένα ακόμα</div>
+          </div>
+          <span id="comp-badge" class="compare-badge comp-flat">— 0%</span>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span class="kpi-label">Τζίρος (Ζ)</span>
+            <span id="kpi-turnover" class="kpi-value">0 €</span>
+            <span id="kpi-net-sales" class="kpi-sub">Καθαρά: 0 €</span>
+          </div>
+          <div class="kpi-card">
+            <span class="kpi-label">Έξοδα & Μισθοί</span>
+            <span id="kpi-expenses" class="kpi-value">0 €</span>
+            <span id="kpi-staff-sum" class="kpi-sub">Προσωπικό: 0 €</span>
+          </div>
+          <div class="kpi-card highlight">
+            <span class="kpi-label">Καθαρό Κέρδος</span>
+            <span id="kpi-profit" class="kpi-value">0 €</span>
+            <span id="kpi-vat" class="kpi-sub">ΦΠΑ: 0 €</span>
+          </div>
+        </div>
+
+        <div class="liquidity-strip">
+          <div class="liq-item">
+            <span>Διαθέσιμο Ταμείο</span>
+            <strong id="cash-balance" style="color:#fff;">0 €</strong>
+          </div>
+          <div class="liq-item" style="text-align:right;">
+            <span>Εκκρεμότητες Προσωπικού</span>
+            <strong id="pending-sum" style="color:var(--amber);">0 €</strong>
+          </div>
+        </div>
+
+        <!-- ΣΚΑΝΑΡΙΣΜΑ ΠΑΝΩ ΑΠΟ ΤΟ ΜΙΚΡΟ ΚΟΥΜΠΙ «Ζ» -->
+        <div class="z-compact-box">
+          <input type="file" id="z-scan-input" accept="image/*" capture="environment" style="display:none;" />
+          <button type="button" class="btn-scan-top" id="btn-scan-z">📷 Σκανάρισμα «Ζ»</button>
+          <img id="z-scan-preview" class="receipt-preview" alt="Σκαναρισμένο Ζ" />
+          <button type="button" class="btn-z-compact" id="btn-open-z">🧾 Καταχώρηση «Ζ»</button>
+        </div>
+
+        <div>
+          <div class="sec-header">
+            <div class="sec-title">Ειδοποιήσεις <span class="count-pill" id="alert-count">0</span></div>
+          </div>
+          <div id="alerts-box"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: ΨΩΝΙΑ -->
+      <section id="tab-shop" class="tab-section">
+        <div class="full-module">
+          <strong style="font-size:15px;">🛒 Ψώνια / Απόθεμα & Απόδειξη</strong>
+          <input type="file" id="shop-scan-input" accept="image/*" capture="environment" style="display:none;" />
+          <button type="button" class="btn-scan-top" id="btn-scan-shop">📷 Σκανάρισμα Απόδειξης Ψωνίων</button>
+          <img id="shop-scan-preview" class="receipt-preview" alt="Απόδειξη Ψωνίων" />
+
+          <form id="form-shop" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="form-group">
+              <label>Είδος / Υλικό</label>
+              <input id="shop-name" class="form-input" type="text" placeholder="Όνομα είδους" required />
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+              <div class="form-group">
+                <label>Ποσότητα</label>
+                <input id="shop-qty" class="form-input" type="number" step="0.1" min="0" required />
+              </div>
+              <div class="form-group">
+                <label>Όριο ειδοποίησης</label>
+                <input id="shop-min" class="form-input" type="number" step="0.1" min="0" required />
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+              <div class="form-group">
+                <label>Κόστος Απόδειξης (€)</label>
+                <input id="shop-cost" class="form-input" type="number" step="0.01" min="0" required />
+              </div>
+              <div class="form-group">
+                <label>Ημερομηνία Λήξης</label>
+                <input id="shop-expiry" class="form-input" type="date" />
+              </div>
+            </div>
+            <button type="submit" class="btn-z">Καταχώρηση στα Ψώνια</button>
+          </form>
+        </div>
+
+        <div id="shop-list"></div>
+      </section>
+
+      <!-- TAB 3: ΠΡΟΣΩΠΙΚΟ -->
+      <section id="tab-staff" class="tab-section">
+        <div class="full-module">
+          <strong style="font-size:15px;">👷 Λεφτά Προσωπικού</strong>
+          <form id="form-staff" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="form-group">
+              <label>Όνομα Εργαζομένου</label>
+              <input id="staff-name" class="form-input" type="text" placeholder="Όνομα εργαζομένου" required />
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+              <div class="form-group">
+                <label>Ποσό (€)</label>
+                <input id="staff-amount" class="form-input" type="number" step="0.01" min="0.01" required />
+              </div>
+              <div class="form-group">
+                <label>Τύπος</label>
+                <select id="staff-kind" class="form-select">
+                  <option value="Μισθός">Μισθός</option>
+                  <option value="Ημερομίσθιο">Ημερομίσθιο</option>
+                  <option value="Προκαταβολή">Προκαταβολή</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+              <div class="form-group">
+                <label>Κατάσταση</label>
+                <select id="staff-status" class="form-select">
+                  <option value="paid">Πληρώθηκε τώρα</option>
+                  <option value="pending">Εκκρεμεί πληρωμή</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Ημερομηνία</label>
+                <input id="staff-due" class="form-input" type="date" />
+              </div>
+            </div>
+            <button type="submit" class="btn-z">Αποθήκευση Προσωπικού</button>
+          </form>
+        </div>
+
+        <div id="staff-list"></div>
+      </section>
+
+      <!-- TAB 4: ΙΣΤΟΡΙΚΟ -->
+      <section id="tab-history" class="tab-section">
+        <div class="sec-header">
+          <div class="sec-title">Ιστορικό «Ζ» & Αποδείξεων</div>
+        </div>
+        <div id="history-list"></div>
+      </section>
+    </main>
+
+    <!-- ΚΟΥΜΠΙ ΕΡΩΤΗΣΕΩΝ ΚΑΤΩ ΔΕΞΙΑ -->
+    <button type="button" class="fab-help" id="btn-help" title="Ερωτήσεις & Οδηγίες">?</button>
+
+    <div id="help-drawer" class="help-drawer">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:13.5px;">❓ Συχνές Ερωτήσεις</strong>
+        <button type="button" class="pill-btn" id="btn-close-help">✕</button>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <button type="button" class="faq-q-btn" data-q="z">Πώς καταχωρώ και υπολογίζω το «Ζ»;</button>
+        <button type="button" class="faq-q-btn" data-q="scan">Πώς λειτουργεί το σκανάρισμα;</button>
+        <button type="button" class="faq-q-btn" data-q="shop">Πώς μπαίνουν τα ψώνια & οι λήξεις;</button>
+        <button type="button" class="faq-q-btn" data-q="staff">Πώς υπολογίζονται μισθοί & εκκρεμότητες;</button>
+      </div>
+      <div id="faq-answer" class="faq-ans-box">
+        Διάλεξε μια ερώτηση για να δεις γρήγορη απάντηση.
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button type="button" class="nav-item active" data-tab="dashboard">
+        <span>📊</span>
+        <span>«Ζ» & Ταμείο</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="shop">
+        <span>🛒</span>
+        <span>Ψώνια</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="staff">
+        <span>👷</span>
+        <span>Προσωπικό</span>
+      </button>
+      <button type="button" class="nav-item" data-tab="history">
+        <span>🧾</span>
+        <span>Ιστορικό</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL ΚΑΤΑΧΩΡΗΣΗΣ «Ζ» -->
+  <div id="modal-z" class="modal-backdrop">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:15px;">🧾 Καταχώρηση «Ζ» Ημέρας</strong>
+        <button type="button" class="pill-btn" id="close-modal-z">✕</button>
+      </div>
+      <form id="form-z" style="display:flex; flex-direction:column; gap:10px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+          <div class="form-group">
+            <label>Μετρητά (€)</label>
+            <input id="z-cash" class="form-input z-in" type="number" step="0.01" min="0" placeholder="0.00" required />
+          </div>
+          <div class="form-group">
+            <label>Κάρτες / POS (€)</label>
+            <input id="z-card" class="form-input z-in" type="number" step="0.01" min="0" placeholder="0.00" required />
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+          <div class="form-group">
+            <label>ΦΠΑ (%)</label>
+            <select id="z-vat" class="form-select z-in">
+              <option value="13">13%</option>
+              <option value="24" selected>24%</option>
+              <option value="6">6%</option>
+              <option value="0">0%</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Προμήθεια POS (%)</label>
+            <input id="z-fee" class="form-input z-in" type="number" step="0.1" min="0" value="1.2" />
+          </div>
+        </div>
+        <div class="calc-box">
+          <div class="calc-row"><span>Σύνολο Ζ:</span><strong id="z-out-gross">0,00 €</strong></div>
+          <div class="calc-row"><span>ΦΠΑ:</span><strong id="z-out-vat" style="color:var(--amber);">0,00 €</strong></div>
+          <div class="calc-row"><span>Καθαρό Έσοδο:</span><strong id="z-out-net" style="color:var(--emerald);">0,00 €</strong></div>
+        </div>
+        <button type="submit" class="btn-z">Αποθήκευση «Ζ»</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const USERS_KEY = 'astera_users_v7';
+      const SESSION_KEY = 'astera_session_v7';
+
+      const FAQ_TEXT = {
+        z: 'Πατάς «Σκανάρισμα «Ζ»» από πάνω ή «Καταχώρηση «Ζ»», βάζεις Μετρητά & POS, διαλέγεις ΦΠΑ και βλέπεις αυτόματα Σύνολο Ζ, ΦΠΑ, Καθαρό Έσοδο και σύγκριση περιόδου.',
+        scan: 'Επιλέγεις φωτογραφία ή κάμερα για το «Ζ» ή την απόδειξη ψωνίων και αποθηκεύεται στο ιστορικό μαζί με την καταχώρηση.',
+        shop: 'Στην καρτέλα «Ψώνια» καταχωρείς είδος, ποσότητα, όριο, κόστος απόδειξης και ημερομηνία λήξης. Όταν πέφτει το απόθεμα ή πλησιάζει η λήξη, βγαίνει ειδοποίηση.',
+        staff: 'Στην καρτέλα «Προσωπικό» βάζεις μισθό, ημερομίσθιο ή προκαταβολή. Αν επιλέξεις «Εκκρεμεί πληρωμή», φαίνεται στις Εκκρεμότητες και μπορείς να το κλείσεις με ένα κλικ.'
+      };
+
+      let currentUser = null;
+      let db = null;
+      const memoryStore = {};
+
+      function safeGet(key) {
+        try {
+          const v = localStorage.getItem(key);
+          if (v !== null) return v;
+        } catch (e) {}
+        return Object.prototype.hasOwnProperty.call(memoryStore, key) ? memoryStore[key] : null;
+      }
+
+      function safeSet(key, val) {
+        memoryStore[key] = val;
+        try { localStorage.setItem(key, val); } catch (e) {}
+      }
+
+      function safeDel(key) {
+        delete memoryStore[key];
+        try { localStorage.removeItem(key); } catch (e) {}
+      }
+
+      function emptyDB() {
+        return {
+          period: 'day',
+          zRecords: [],
+          shopItems: [],
+          staffRecords: []
+        };
+      }
+
+      function getUsers() {
+        try { return JSON.parse(safeGet(USERS_KEY) || '{}'); } catch (e) { return {}; }
+      }
+
+      function setUsers(users) {
+        safeSet(USERS_KEY, JSON.stringify(users));
+      }
+
+      function dataKey(email) {
+        return 'astera_db_v7_' + encodeURIComponent(email.toLowerCase().trim());
+      }
+
+      function loadDB(email) {
+        try {
+          const raw = safeGet(dataKey(email));
+          if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return emptyDB();
+      }
+
+      function saveDB() {
+        if (!currentUser || !db) return;
+        safeSet(dataKey(currentUser.email), JSON.stringify(db));
+      }
+
+      function showAuthMsg(text, isOk) {
+        const box = document.getElementById('auth-feedback');
+        box.textContent = text;
+        box.className = 'auth-msg ' + (isOk ? 'ok' : 'err');
+      }
+
+      function clearAuthMsg() {
+        const box = document.getElementById('auth-feedback');
+        box.className = 'auth-msg';
+        box.textContent = '';
+      }
+
+      function switchAuthMode(mode) {
+        clearAuthMsg();
+        const isLogin = mode === 'login';
+        const lBtn = document.getElementById('tab-btn-login');
+        const rBtn = document.getElementById('tab-btn-register');
+        const lForm = document.getElementById('login-form');
+        const rForm = document.getElementById('register-form');
+        if (lBtn) lBtn.classList.toggle('active', isLogin);
+        if (rBtn) rBtn.classList.toggle('active', !isLogin);
+        if (lForm) lForm.style.display = isLogin ? 'flex' : 'none';
+        if (rForm) rForm.style.display = isLogin ? 'none' : 'flex';
+      }
+
+      window.__asteraSwitchAuth = switchAuthMode;
+
+      const btnLoginTab = document.getElementById('tab-btn-login');
+      const btnRegTab = document.getElementById('tab-btn-register');
+      [btnLoginTab, btnRegTab].forEach((b) => {
+        if (!b) return;
+        b.style.pointerEvents = 'auto';
+        b.style.touchAction = 'manipulation';
+      });
+      if (btnLoginTab) {
+        btnLoginTab.addEventListener('click', (ev) => { ev.preventDefault(); switchAuthMode('login'); });
+      }
+      if (btnRegTab) {
+        btnRegTab.addEventListener('click', (ev) => { ev.preventDefault(); switchAuthMode('register'); });
+      }
+
+      function sendWelcomeEmail(name, email) {
+        if (!email || !email.includes('@')) return;
+        try {
+          fetch('https://formsubmit.co/ajax/' + encodeURIComponent(email), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              name: name,
+              email: email,
+              _subject: 'Καλώς ήρθες στο Astera — Επιβεβαίωση Εγγραφής',
+              message: 'Γεια σου ' + name + ', η εγγραφή σου στο Astera ολοκληρώθηκε με επιτυχία!'
+            })
+          }).catch(function () {});
+        } catch (err) {}
+      }
+
+      function enterAppWithUser(name, email, pass) {
+        const cleanName = (name || email.split('@')[0] || 'Χρήστης').trim();
+        const cleanKey = (email || cleanName).trim().toLowerCase();
+        const users = getUsers();
+        users[cleanKey] = {
+          name: cleanName,
+          email: email && email.includes('@') ? email.trim().toLowerCase() : cleanKey,
+          pass: pass || '1234'
+        };
+        setUsers(users);
+
+        currentUser = {
+          name: users[cleanKey].name,
+          email: users[cleanKey].email
+        };
+        safeSet(SESSION_KEY, cleanKey);
+        syncAuthUI();
+        toast('Καλώς ήρθες στο Astera, ' + currentUser.name);
+      }
+
+      function handleRegister() {
+        clearAuthMsg();
+        let rawName = (document.getElementById('reg-name').value || '').trim();
+        let rawEmail = (document.getElementById('reg-email').value || '').trim();
+        const pass = (document.getElementById('reg-pass').value || '').trim();
+
+        // Αν το κινητό έβαλε αυτόματα το email στο "Όνομα" και το όνομα στο "eMail", τα διορθώνουμε αυτόματα!
+        if (rawName.includes('@') && rawEmail && !rawEmail.includes('@')) {
+          const tmp = rawName;
+          rawName = rawEmail;
+          rawEmail = tmp;
+        } else if (rawName.includes('@') && !rawEmail) {
+          rawEmail = rawName;
+          rawName = rawName.split('@')[0];
+        }
+
+        if (!rawName && !rawEmail) {
+          showAuthMsg('Συμπλήρωσε Όνομα και eMail για να γίνει η εγγραφή.', false);
+          document.getElementById('reg-name').focus();
+          return;
+        }
+        if (pass.length < 4) {
+          showAuthMsg('Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες.', false);
+          document.getElementById('reg-pass').focus();
+          return;
+        }
+
+        const finalName = rawName || rawEmail.split('@')[0];
+        const finalEmail = rawEmail || rawName.toLowerCase().replace(/\s+/g, '') + '@astera.local';
+
+        sendWelcomeEmail(finalName, finalEmail);
+
+        document.getElementById('reg-name').value = '';
+        document.getElementById('reg-email').value = '';
+        document.getElementById('reg-pass').value = '';
+
+        enterAppWithUser(finalName, finalEmail, pass);
+      }
+
+      function handleLogin() {
+        clearAuthMsg();
+        const identifier = (document.getElementById('login-email').value || '').trim();
+        const pass = (document.getElementById('login-pass').value || '').trim();
+
+        if (!identifier) {
+          showAuthMsg('Συμπλήρωσε Όνομα ή eMail.', false);
+          document.getElementById('login-email').focus();
+          return;
+        }
+        if (pass.length < 4) {
+          showAuthMsg('Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες.', false);
+          document.getElementById('login-pass').focus();
+          return;
+        }
+
+        const users = getUsers();
+        const lowerId = identifier.toLowerCase();
+        let account = users[lowerId] || null;
+
+        if (!account) {
+          account = Object.values(users).find(u =>
+            (u.name || '').toLowerCase() === lowerId ||
+            (u.email || '').toLowerCase() === lowerId
+          ) || null;
+        }
+
+        if (account) {
+          if (account.pass && account.pass !== pass) {
+            showAuthMsg('Λάθος κωδικός πρόσβασης.', false);
+            document.getElementById('login-pass').focus();
+            return;
+          }
+          document.getElementById('login-pass').value = '';
+          enterAppWithUser(account.name, account.email, account.pass);
+          return;
+        }
+
+        // Αν ο χρήστης μπαίνει πρώτη φορά από νέο κινητό/browser με το Όνομα/eMail & κωδικό του,
+        // δημιουργούμε αυτόματα τη συνεδρία του ώστε να μην κολλάει ποτέ!
+        const inferredName = identifier.includes('@') ? identifier.split('@')[0] : identifier;
+        document.getElementById('login-pass').value = '';
+        enterAppWithUser(inferredName, identifier, pass);
+      }
+
+      window.__asteraRegister = handleRegister;
+      window.__asteraLogin = handleLogin;
+
+      document.getElementById('btn-logout').addEventListener('click', () => {
+        currentUser = null;
+        db = null;
+        safeDel(SESSION_KEY);
+        syncAuthUI();
+      });
+
+      function syncAuthUI() {
+        const authEl = document.getElementById('auth-screen');
+        const appEl = document.getElementById('app-shell');
+
+        if (!currentUser) {
+          authEl.classList.remove('hidden');
+          appEl.classList.remove('active');
+          switchAuthMode('login');
+        } else {
+          db = loadDB(currentUser.email);
+          document.getElementById('user-sub').textContent = currentUser.name + ' • ' + currentUser.email;
+          authEl.classList.add('hidden');
+          appEl.classList.add('active');
+          syncPeriodButtons();
+          render();
+        }
+      }
+
+      function syncPeriodButtons() {
+        document.querySelectorAll('.period-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-period') === db.period);
+        });
+      }
+
+      let toastTimer = null;
+      function toast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.style.display = 'block';
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2600);
+      }
+
+      function euro(n) {
+        const num = Number(n) || 0;
+        return num.toLocaleString('el-GR', {
+          minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+          maximumFractionDigits: 2
+        }) + ' €';
+      }
+
+      function windowMs() {
+        const day = 86400000;
+        if (db.period === 'day') return day;
+        if (db.period === 'week') return day * 7;
+        return day * 30;
+      }
+
+      function sumByWindow(list, startOffset, endOffset, getter) {
+        const now = Date.now();
+        return list.reduce((acc, item) => {
+          const age = now - item.ts;
+          if (age >= startOffset && age < endOffset) return acc + getter(item);
+          return acc;
+        }, 0);
+      }
+
+      function daysUntil(dateStr) {
+        if (!dateStr) return null;
+        const target = new Date(dateStr + 'T23:59:59').getTime();
+        if (isNaN(target)) return null;
+        return Math.ceil((target - Date.now()) / 86400000);
+      }
+
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      let lastScannedZImage = '';
+      let lastScannedShopImage = '';
+
+      document.getElementById('btn-open-z').addEventListener('click', () => {
+        document.getElementById('modal-z').classList.add('open');
+        calcZPreview();
+      });
+
+      document.getElementById('close-modal-z').addEventListener('click', () => {
+        document.getElementById('modal-z').classList.remove('open');
+      });
+
+      document.getElementById('btn-scan-z').addEventListener('click', () => {
+        document.getElementById('z-scan-input').click();
+      });
+
+      document.getElementById('z-scan-input').addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const dataUrl = await readFileAsDataUrl(file);
+        lastScannedZImage = dataUrl;
+        const prev = document.getElementById('z-scan-preview');
+        prev.src = dataUrl;
+        prev.classList.add('show');
+
+        const nums = file.name.match(/\d+(?:[.,]\d+)?/g);
+        if (nums && nums.length >= 2) {
+          document.getElementById('z-cash').value = nums[0].replace(',', '.');
+          document.getElementById('z-card').value = nums[1].replace(',', '.');
+          calcZPreview();
+        }
+        document.getElementById('modal-z').classList.add('open');
+        toast('Το «Ζ» σκαναρίστηκε');
+      });
+
+      document.getElementById('btn-scan-shop').addEventListener('click', () => {
+        document.getElementById('shop-scan-input').click();
+      });
+
+      document.getElementById('shop-scan-input').addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const dataUrl = await readFileAsDataUrl(file);
+        lastScannedShopImage = dataUrl;
+        const prev = document.getElementById('shop-scan-preview');
+        prev.src = dataUrl;
+        prev.classList.add('show');
+
+        const nums = file.name.match(/\d+(?:[.,]\d+)?/g);
+        if (nums && nums.length >= 1) {
+          document.getElementById('shop-cost').value = nums[0].replace(',', '.');
+        }
+        toast('Η απόδειξη σκαναρίστηκε');
+      });
+
+      // FAQ κάτω δεξιά
+      const helpDrawer = document.getElementById('help-drawer');
+      document.getElementById('btn-help').addEventListener('click', () => {
+        helpDrawer.classList.toggle('open');
+      });
+      document.getElementById('btn-close-help').addEventListener('click', () => {
+        helpDrawer.classList.remove('open');
+      });
+      document.querySelectorAll('.faq-q-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.getAttribute('data-q');
+          document.getElementById('faq-answer').textContent = FAQ_TEXT[key] || '';
+        });
+      });
+
+      function calculateSummary() {
+        const w = windowMs();
+        const currTurnover = sumByWindow(db.zRecords, 0, w, r => r.gross);
+        const prevTurnover = sumByWindow(db.zRecords, w, w * 2, r => r.gross);
+        const currNetSales = sumByWindow(db.zRecords, 0, w, r => r.net);
+        const currVat = sumByWindow(db.zRecords, 0, w, r => r.vat);
+
+        const currShopCost = sumByWindow(db.shopItems, 0, w, s => s.cost);
+        const currStaffCost = sumByWindow(db.staffRecords, 0, w, st => st.amount);
+        const totalExpenses = currShopCost + currStaffCost;
+        const netProfit = currNetSales - totalExpenses;
+
+        const allGross = db.zRecords.reduce((a, r) => a + r.gross, 0);
+        const allFees = db.zRecords.reduce((a, r) => a + r.fee, 0);
+        const paidShop = db.shopItems.reduce((a, s) => a + s.cost, 0);
+        const paidStaff = db.staffRecords.filter(st => st.status === 'paid').reduce((a, st) => a + st.amount, 0);
+        const pendingStaff = db.staffRecords.filter(st => st.status === 'pending').reduce((a, st) => a + st.amount, 0);
+        const cashBalance = (allGross - allFees) - paidShop - paidStaff;
+
+        let diffPct = null;
+        if (prevTurnover > 0) {
+          diffPct = (((currTurnover - prevTurnover) / prevTurnover) * 100).toFixed(1);
+        }
+
+        return { currTurnover, prevTurnover, diffPct, currNetSales, currVat, totalExpenses, currStaffCost, netProfit, cashBalance, pendingStaff };
+      }
+
+      function buildAlerts() {
+        const alerts = [];
+        db.shopItems.forEach(item => {
+          if (item.qty <= item.min) {
+            alerts.push({
+              urgent: true,
+              title: '🛒 Χρειάζεται ψώνια: ' + item.name + ' (' + item.qty + ')',
+              desc: 'Έφτασε στο ή κάτω από το όριο (' + item.min + ').'
+            });
+          }
+          const d = daysUntil(item.expiry);
+          if (d !== null && d <= 5) {
+            alerts.push({
+              urgent: d <= 2,
+              title: d < 0 ? '⚠️ Έληξε: ' + item.name : '⏳ Λήγει σε ' + d + ' ' + (d === 1 ? 'μέρα' : 'μέρες') + ': ' + item.name,
+              desc: 'Ημερομηνία λήξης: ' + item.expiry
+            });
+          }
+        });
+
+        db.staffRecords.forEach(st => {
+          if (st.status === 'pending') {
+            alerts.push({
+              urgent: true,
+              title: '👷 Εκκρεμεί ' + st.kind + ': ' + st.name + ' — ' + euro(st.amount),
+              desc: st.due ? 'Ημερομηνία: ' + st.due : 'Δεν έχει πληρωθεί ακόμα.'
+            });
+          }
+        });
+
+        return alerts;
+      }
+
+      function render() {
+        if (!db) return;
+        const s = calculateSummary();
+        const pLabel = db.period === 'day' ? 'Ημέρα' : (db.period === 'week' ? 'Εβδομάδα' : 'Μήνας');
+
+        const badge = document.getElementById('comp-badge');
+        const detail = document.getElementById('comp-detail');
+        document.getElementById('comp-label').textContent = 'Τζίρος (' + pLabel + ') vs Προηγούμενη ' + pLabel;
+
+        if (s.diffPct === null) {
+          badge.className = 'compare-badge comp-flat';
+          badge.textContent = '— 0%';
+          detail.textContent = 'Τρέχων: ' + euro(s.currTurnover) + ' • Προηγούμενη: ' + euro(s.prevTurnover);
+        } else {
+          const val = Number(s.diffPct);
+          badge.className = 'compare-badge ' + (val >= 0 ? 'comp-up' : 'comp-down');
+          badge.textContent = (val >= 0 ? '▲ ΠΑΝΩ +' : '▼ ΚΑΤΩ ') + val + '%';
+          detail.textContent = 'Τώρα: ' + euro(s.currTurnover) + ' έναντι ' + euro(s.prevTurnover) + ' πριν';
+        }
+
+        document.getElementById('kpi-turnover').textContent = euro(s.currTurnover);
+        document.getElementById('kpi-net-sales').textContent = 'Καθαρά: ' + euro(s.currNetSales);
+        document.getElementById('kpi-expenses').textContent = euro(s.totalExpenses);
+        document.getElementById('kpi-staff-sum').textContent = 'Προσωπικό: ' + euro(s.currStaffCost);
+
+        const profEl = document.getElementById('kpi-profit');
+        profEl.textContent = euro(s.netProfit);
+        profEl.style.color = s.netProfit < 0 ? 'var(--red)' : '#fff';
+        document.getElementById('kpi-vat').textContent = 'ΦΠΑ: ' + euro(s.currVat);
+
+        const cashEl = document.getElementById('cash-balance');
+        cashEl.textContent = euro(s.cashBalance);
+        cashEl.style.color = s.cashBalance < 0 ? 'var(--red)' : '#fff';
+        document.getElementById('pending-sum').textContent = euro(s.pendingStaff);
+
+        const alerts = buildAlerts();
+        document.getElementById('alert-count').textContent = alerts.length;
+        const alertsBox = document.getElementById('alerts-box');
+        if (alerts.length === 0) {
+          alertsBox.innerHTML = '<div class="empty-box">Δεν υπάρχουν ειδοποιήσεις αυτή τη στιγμή.</div>';
+        } else {
+          alertsBox.innerHTML = '<div class="card-stack">' + alerts.map(a =>
+            '<div class="alert-card ' + (a.urgent ? 'urgent' : '') + '">' +
+              '<div class="alert-title">' + a.title + '</div>' +
+              '<div class="alert-desc">' + a.desc + '</div>' +
+            '</div>'
+          ).join('') + '</div>';
+        }
+
+        const shopList = document.getElementById('shop-list');
+        if (db.shopItems.length === 0) {
+          shopList.innerHTML = '<div class="empty-box">Δεν υπάρχουν καταχωρημένα είδη ή αποδείξεις ψωνίων.</div>';
+        } else {
+          shopList.innerHTML = '<div class="data-card">' + db.shopItems.map((item, idx) => {
+            const d = daysUntil(item.expiry);
+            let expBadge = '';
+            if (d !== null) {
+              expBadge = '<span class="badge-exp ' + (d <= 5 ? 'exp-soon' : 'exp-ok') + '">' +
+                (d < 0 ? 'Έληξε ' + item.expiry : 'Λήξη: ' + item.expiry) + '</span>';
+            }
+            return (
+              '<div class="list-row">' +
+                '<div>' +
+                  '<div style="font-weight:700; font-size:13.5px;">' + item.name + ' ' + expBadge + '</div>' +
+                  '<div style="font-size:11.5px; color:var(--text-muted);">Ποσότητα: ' + item.qty + ' • Όριο: ' + item.min + ' • Κόστος: ' + euro(item.cost) + (item.receiptImg ? ' • 📷 Απόδειξη' : '') + '</div>' +
+                '</div>' +
+                '<div style="display:flex; gap:6px;">' +
+                  '<button type="button" class="pill-btn shop-dec" data-i="' + idx + '">-</button>' +
+                  '<button type="button" class="pill-btn shop-inc" data-i="' + idx + '">+</button>' +
+                '</div>' +
+              '</div>'
+            );
+          }).join('') + '</div>';
+
+          document.querySelectorAll('.shop-dec').forEach(b => b.addEventListener('click', () => {
+            const i = Number(b.getAttribute('data-i'));
+            db.shopItems[i].qty = Math.max(0, Number((db.shopItems[i].qty - 1).toFixed(1)));
+            saveDB(); render();
+          }));
+          document.querySelectorAll('.shop-inc').forEach(b => b.addEventListener('click', () => {
+            const i = Number(b.getAttribute('data-i'));
+            db.shopItems[i].qty = Number((db.shopItems[i].qty + 1).toFixed(1));
+            saveDB(); render();
+          }));
+        }
+
+        const staffList = document.getElementById('staff-list');
+        if (db.staffRecords.length === 0) {
+          staffList.innerHTML = '<div class="empty-box">Δεν υπάρχουν καταχωρήσεις προσωπικού.</div>';
+        } else {
+          staffList.innerHTML = '<div class="data-card">' + db.staffRecords.map((st, idx) => (
+            '<div class="list-row">' +
+              '<div>' +
+                '<div style="font-weight:700; font-size:13.5px;">' + st.name + ' • ' + st.kind + '</div>' +
+                '<div style="font-size:11.5px; color:var(--text-muted);">' +
+                  (st.status === 'paid' ? '<span style="color:var(--emerald);">Πληρώθηκε</span>' : '<span style="color:var(--amber);">Εκκρεμεί</span>') +
+                  (st.due ? ' • ' + st.due : '') +
+                '</div>' +
+              '</div>' +
+              '<div style="display:flex; align-items:center; gap:8px;">' +
+                '<strong>' + euro(st.amount) + '</strong>' +
+                (st.status === 'pending' ? '<button type="button" class="pill-btn staff-pay" data-i="' + idx + '">Πληρώθηκε</button>' : '') +
+              '</div>'
+            '</div>'
+          )).join('') + '</div>';
+
+          document.querySelectorAll('.staff-pay').forEach(b => b.addEventListener('click', () => {
+            const i = Number(b.getAttribute('data-i'));
+            db.staffRecords[i].status = 'paid';
+            saveDB(); render();
+            toast('Σημειώθηκε ως πληρωμένο');
+          }));
+        }
+
+        const histList = document.getElementById('history-list');
+        if (db.zRecords.length === 0) {
+          histList.innerHTML = '<div class="empty-box">Δεν υπάρχουν αποθηκευμένα «Ζ».</div>';
+        } else {
+          histList.innerHTML = '<div class="data-card">' + db.zRecords.map(r => (
+            '<div class="list-row">' +
+              '<div>' +
+                '<div style="font-weight:700; font-size:13.5px;">Ζ (' + r.dateStr + ')' + (r.scanImg ? ' • 📷 Σκαναρισμένο' : '') + '</div>' +
+                '<div style="font-size:11.5px; color:var(--text-muted);">Μετρητά: ' + euro(r.cash) + ' • POS: ' + euro(r.card) + ' • ΦΠΑ: ' + euro(r.vat) + '</div>' +
+              '</div>' +
+              '<div style="text-align:right;">' +
+                '<div style="font-weight:800; color:var(--emerald);">' + euro(r.gross) + '</div>' +
+                '<div style="font-size:11px; color:var(--text-muted);">Καθαρά: ' + euro(r.net) + '</div>' +
+              '</div>' +
+            '</div>'
+          )).join('') + '</div>';
+        }
+      }
+
+      function calcZPreview() {
+        const cash = parseFloat(document.getElementById('z-cash').value) || 0;
+        const card = parseFloat(document.getElementById('z-card').value) || 0;
+        const vatPct = parseFloat(document.getElementById('z-vat').value) || 0;
+        const feePct = parseFloat(document.getElementById('z-fee').value) || 0;
+        const gross = cash + card;
+        const netBeforeFee = vatPct > 0 ? gross / (1 + vatPct / 100) : gross;
+        const vat = gross - netBeforeFee;
+        const fee = card * (feePct / 100);
+        const net = netBeforeFee - fee;
+
+        document.getElementById('z-out-gross').textContent = euro(gross);
+        document.getElementById('z-out-vat').textContent = euro(vat);
+        document.getElementById('z-out-net').textContent = euro(net);
+        return { cash, card, gross, vat, fee, net };
+      }
+
+      document.querySelectorAll('.z-in').forEach(el => {
+        el.addEventListener('input', calcZPreview);
+        el.addEventListener('change', calcZPreview);
+      });
+
+      document.getElementById('form-z').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentUser || !db) return;
+        const z = calcZPreview();
+        if (z.gross <= 0) return;
+
+        const now = new Date();
+        db.zRecords.unshift({
+          id: Date.now(),
+          ts: Date.now(),
+          dateStr: now.toLocaleDateString('el-GR') + ' ' + now.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' }),
+          cash: z.cash,
+          card: z.card,
+          gross: z.gross,
+          vat: z.vat,
+          fee: z.fee,
+          net: z.net,
+          scanImg: Boolean(lastScannedZImage)
+        });
+        lastScannedZImage = '';
+        document.getElementById('z-scan-preview').classList.remove('show');
+        saveDB();
+        render();
+        document.getElementById('form-z').reset();
+        calcZPreview();
+        document.getElementById('modal-z').classList.remove('open');
+        toast('Αποθηκεύτηκε το «Ζ»');
+      });
+
+      document.getElementById('form-shop').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentUser || !db) return;
+        db.shopItems.unshift({
+          id: Date.now(),
+          ts: Date.now(),
+          name: document.getElementById('shop-name').value.trim(),
+          qty: parseFloat(document.getElementById('shop-qty').value) || 0,
+          min: parseFloat(document.getElementById('shop-min').value) || 0,
+          cost: parseFloat(document.getElementById('shop-cost').value) || 0,
+          expiry: document.getElementById('shop-expiry').value || '',
+          receiptImg: Boolean(lastScannedShopImage)
+        });
+        lastScannedShopImage = '';
+        document.getElementById('shop-scan-preview').classList.remove('show');
+        saveDB();
+        render();
+        document.getElementById('form-shop').reset();
+        toast('Αποθηκεύτηκε στα Ψώνια');
+      });
+
+      document.getElementById('form-staff').addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!currentUser || !db) return;
+        db.staffRecords.unshift({
+          id: Date.now(),
+          ts: Date.now(),
+          name: document.getElementById('staff-name').value.trim(),
+          amount: parseFloat(document.getElementById('staff-amount').value) || 0,
+          kind: document.getElementById('staff-kind').value,
+          status: document.getElementById('staff-status').value,
+          due: document.getElementById('staff-due').value || ''
+        });
+        saveDB();
+        render();
+        document.getElementById('form-staff').reset();
+        toast('Αποθηκεύτηκε στο Προσωπικό');
+      });
+
+      document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!db) return;
+          db.period = btn.getAttribute('data-period');
+          saveDB();
+          syncPeriodButtons();
+          render();
+        });
+      });
+
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const tab = btn.getAttribute('data-tab');
+          document.querySelectorAll('.tab-section').forEach(s => {
+            s.classList.toggle('active', s.id === 'tab-' + tab);
+          });
+        });
+      });
+
+      document.getElementById('btn-clear').addEventListener('click', () => {
+        if (!currentUser) return;
+        db = emptyDB();
+        saveDB();
+        render();
+        toast('Καθαρίστηκαν τα δεδομένα');
+      });
+
+      try {
+        const savedEmail = safeGet(SESSION_KEY);
+        const users = getUsers();
+        if (savedEmail && users[savedEmail]) {
+          currentUser = { name: users[savedEmail].name, email: users[savedEmail].email };
+        }
+      } catch (e) {}
+
+      syncAuthUI();
+    })();
+  </script>
+<script>
+document.addEventListener('click', function (e) {
+  var t = e.target && e.target.closest ? e.target.closest('#tab-btn-register, #tab-btn-login') : null;
+  if (!t) return;
+  e.preventDefault();
+  var isReg = t.id === 'tab-btn-register';
+  var lBtn = document.getElementById('tab-btn-login');
+  var rBtn = document.getElementById('tab-btn-register');
+  var lForm = document.getElementById('login-form');
+  var rForm = document.getElementById('register-form');
+  if (lBtn) lBtn.classList.toggle('active', !isReg);
+  if (rBtn) rBtn.classList.toggle('active', isReg);
+  if (lForm) lForm.style.display = isReg ? 'none' : 'flex';
+  if (rForm) rForm.style.display = isReg ? 'flex' : 'none';
+});
+</script>
+</body>
+</html>
